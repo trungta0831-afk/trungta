@@ -1,5 +1,6 @@
 name: Build APK
-on: [push, workflow_dispatch]
+on:
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -10,10 +11,17 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Grant execute permission
-        run: chmod +x gradlew
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+      - name: Generate gradle wrapper if missing
+        run: |
+          if [ ! -f gradlew ]; then
+            gradle wrapper
+          fi
       - name: Build APK
-        run: ./gradlew assembleDebug --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
